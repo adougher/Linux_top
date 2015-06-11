@@ -1,0 +1,39 @@
+Name:	Xorg
+State:	S (sleeping)
+Tgid:	27859
+Pid:	27859
+PPid:	1211
+TracerPid:	0
+Uid:	0	0	0	0
+Gid:	0	0	0	0
+FDSize:	128
+Groups:	
+VmPeak:	  315212 kB
+VmSize:	  158272 kB
+VmLck:	       0 kB
+VmPin:	       0 kB
+VmHWM:	   66560 kB
+VmRSS:	   41540 kB
+VmData:	   17948 kB
+VmStk:	     152 kB
+VmExe:	    1984 kB
+VmLib:	   57496 kB
+VmPTE:	     476 kB
+VmSwap:	       0 kB
+Threads:	1
+SigQ:	1/63404
+SigPnd:	0000000000000000
+ShdPnd:	0000000000000000
+SigBlk:	0000000000000000
+SigIgn:	0000000000001000
+SigCgt:	00000001d18066cf
+CapInh:	0000000000000000
+CapPrm:	ffffffffffffffff
+CapEff:	ffffffffffffffff
+CapBnd:	ffffffffffffffff
+Cpus_allowed:	ffff
+Cpus_allowed_list:	0-15
+Mems_allowed:	00000000,00000001
+Mems_allowed_list:	0
+voluntary_ctxt_switches:	204629
+nonvoluntary_ctxt_switches:	18592

@@ -1,0 +1,15 @@
+15 20 0:14 / /sys rw,nosuid,nodev,noexec,relatime - sysfs sysfs rw
+16 20 0:3 / /proc rw,nosuid,nodev,noexec,relatime - proc proc rw
+17 20 0:5 / /dev rw,relatime - devtmpfs udev rw,size=4057916k,nr_inodes=1014479,mode=755
+18 17 0:11 / /dev/pts rw,nosuid,noexec,relatime - devpts devpts rw,gid=5,mode=620,ptmxmode=000
+19 20 0:15 / /run rw,nosuid,relatime - tmpfs tmpfs rw,size=1626692k,mode=755
+20 1 8:1 / / rw,relatime - ext4 /dev/disk/by-uuid/7ea82319-b4da-4857-8119-b3c86f07a15b rw,errors=remount-ro,user_xattr,barrier=1,data=ordered
+22 15 0:16 / /sys/fs/fuse/connections rw,relatime - fusectl none rw
+23 15 0:6 / /sys/kernel/debug rw,relatime - debugfs none rw
+24 15 0:10 / /sys/kernel/security rw,relatime - securityfs none rw
+25 19 0:17 / /run/lock rw,nosuid,nodev,noexec,relatime - tmpfs none rw,size=5120k
+26 19 0:18 / /run/shm rw,nosuid,nodev,relatime - tmpfs none rw
+27 16 0:19 / /proc/sys/fs/binfmt_misc rw,nosuid,nodev,noexec,relatime - binfmt_misc binfmt_misc rw
+29 19 0:20 / /run/rpc_pipefs rw,relatime - rpc_pipefs rpc_pipefs rw
+30 20 0:21 / /u rw,relatime - nfs fermat:/u rw,vers=3,rsize=32768,wsize=32768,namlen=255,hard,nolock,proto=tcp,timeo=600,retrans=2,sec=sys,mountaddr=138.67.132.164,mountvers=3,mountport=33284,mountproto=udp,local_lock=all,addr=138.67.132.164
+21 20 0:22 / /var/lib/lightdm/.gvfs rw,nosuid,nodev,relatime - fuse.gvfs-fuse-daemon gvfs-fuse-daemon rw,user_id=104,group_id=111

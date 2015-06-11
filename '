@@ -1,0 +1,313 @@
+/**
+ * Contains the main() routine of what will eventually be your version of top.
+ */
+
+#include "sysinfo.h"
+#include <cstdlib>
+#include <ncurses.h>
+#include <cmath>
+#include <iostream>
+#include <ctime>
+#include <time.h>
+#include <string>
+#include <unistd.h>
+#include <sstream>
+#include <getopt.h>
+#include <algorithm>
+#include "types/cpu.h"
+#include "types/load_average.h"
+#include "types/memory_info.h"
+#include "types/process.h"
+#include "types/system_info.h"
+#include "structs_n_such.h"
+
+using namespace std;
+
+/**
+ * Gets a character from the user, waiting for however many milliseconds that
+ * were passed to timeout() below. If the letter entered is q, this method will
+ * exit the program.
+ */
+void exit_if_user_presses_q() {
+  char c = getch();
+
+  if (c == 'q') {
+    endwin();
+    exit(EXIT_SUCCESS);
+  }
+}
+
+int index_find( vector<Process>& procs, int curpid )
+{
+  int index=-1;
+  for( size_t i=0; i<procs.size( ); i++ )
+  {
+    if( procs[i].pid==curpid )
+    {
+      index=i;
+      break;
+    }
+  }
+  return index;
+}
+
+string get_pages_bytes( long rss )
+{
+    rss*=sysconf(_SC_PAGESIZE);
+    int index=0;
+    while( rss > 1024 )
+    {
+      rss/=1024;
+      index++;
+    }
+    string srss;
+    ostringstream temp;
+    temp << rss;
+    srss=temp.str( );
+    if( index==1 )
+    {
+      srss=srss + "k";
+    }
+    if( index==2 )
+    {
+      srss=srss + "m";
+    }
+    if( index==3 )
+    {
+      srss=srss + "g";
+    }
+    return srss;
+}
+
+/**
+ * Entry point for the program.
+ */
+int main( int argc, char** argv ) {
+  int opt= 0;
+  int delay_time = 1, do_sort = -1, help = -1;
+  string sort_opt="";
+  if( argc > 1 )
+  {
+    //Specifying the expected options
+    //The two options l and b expect numbers as argument
+    static struct option long_options[] = {
+        {"delay",     required_argument, 0,  'd' },
+        {"sort-key",  required_argument, 0,  's' },
+        {"help",      no_argument,       0,  'h' },
+        {0,           0,                 0,  0   }
+    };
+
+    int long_index =0;
+    while ((opt = getopt_long(argc, argv,"d:s:h", 
+                   long_options, &long_index )) != -1) {
+        switch (opt) {
+             case 'd' : delay_time = atoi(optarg);
+                 break;
+             case 's' : do_sort = 0; sort_opt=string(optarg);
+                 break;
+             case 'h' : help = 0; 
+                 break;
+             default: // print_usage(); 
+                 exit(EXIT_FAILURE);
+        }
+    }
+    if( help==0 )
+    {
+      // print_usage( );
+      return 0;
+    }
+    if (delay_time < 1 || delay_time > 20 ) {
+        // print_usage();
+        exit(EXIT_FAILURE);
+    }
+    if( do_sort != -1 )
+    {
+      if ( sort_opt != "PID" && sort_opt != "CPU" && sort_opt != "MEM" && sort_opt != "TIME" ) {
+          // print_usage();
+          exit(EXIT_FAILURE);
+      }
+    }
+  }
+
+  // ncurses initialization
+  initscr();
+
+  // Don't show a cursor.
+  curs_set(FALSE);
+
+  // Set getch to return after 1000 milliseconds; this allows the program to
+  // immediately respond to user input while not blocking indefinitely.
+  timeout(delay_time*1000);
+
+  SystemInfo sys_info=get_system_info();
+  SystemInfo sys_info_prev;
+  while (true) {
+    wclear(stdscr);
+
+    time_t raw_time;
+    time(&raw_time);
+    char * rtime=ctime(&raw_time);
+    string stime(rtime);
+    stime.erase(0,stime.find_first_of(" ")+1);
+    stime.erase(0,stime.find_first_of(" ")+1);
+    stime.erase(0,stime.find_first_of(" ")+1);
+    stime.erase(stime.find_first_of(" "),100);
+    MemoryInfo meminfo=get_memory_info();
+    int days=floor(sys_info.uptime/(3600.0*24));
+    int hours=floor((sys_info.uptime/(3600.0*24)-days)*24);
+    int mins=floor(((sys_info.uptime/(3600.0*24)-days)*24-hours)*60.0);
+    sys_info_prev=sys_info;
+    sys_info=get_system_info();
+
+    double individual_cpu_percentages[3*sys_info.cpus.size()];
+    unsigned long long ttime=sys_info.cpus[0].total_time();
+    unsigned long long ttime_prev=sys_info_prev.cpus[0].total_time();
+    for( size_t i=0; i<sys_info.cpus.size( ); i++ )
+    {
+      individual_cpu_percentages[3*i]=round(1000.0*(sys_info.cpus[i].user_time-sys_info_prev.cpus[i].user_time)/
+                                           (sys_info.cpus[i].total_time( )-sys_info_prev.cpus[i].total_time( )) )/10.0;
+      individual_cpu_percentages[3*i+1]=round(1000.0*(sys_info.cpus[i].total_system_time()-sys_info_prev.cpus[i].total_system_time())/
+                                              (sys_info.cpus[i].total_time( )-sys_info_prev.cpus[i].total_time( )) )/10.0;
+      individual_cpu_percentages[3*i+2]=round(1000.0*(sys_info.cpus[i].total_idle_time()-sys_info_prev.cpus[i].total_idle_time())/
+                                              (sys_info.cpus[i].total_time( )-sys_info_prev.cpus[i].total_time( )) )/10.0;
+    }
+
+    // Display the counter using printw (an ncurses function)
+    if( days == 0 )
+    {
+      printw("top - %s up %02d:%02d, load average: %.2f, %.2f, %.2f\n",stime.c_str( ),hours,mins,sys_info.load_average.one_min,
+              sys_info.load_average.five_mins,sys_info.load_average.fifteen_mins);
+    }
+    if( days == 1 )
+    {
+      printw("top - %s up %d day, %02d:%02d, load average: %.2f, %.2f, %.2f\n",stime.c_str( ),days,hours,mins,sys_info.load_average.one_min,
+              sys_info.load_average.five_mins,sys_info.load_average.fifteen_mins);
+    }
+    else
+    {
+      printw("top - %s up %d days, %02d:%02d, load average: %.2f, %.2f, %.2f\n",stime.c_str( ),days,hours,mins,sys_info.load_average.one_min,
+              sys_info.load_average.five_mins,sys_info.load_average.fifteen_mins);
+    }
+
+    printw("Tasks: %d total, %d running\nThreads: %d total   User Threads: %d total   Kernel Threads: %d total\n",sys_info.processes.size( ),
+            sys_info.num_running, sys_info.num_threads, sys_info.num_user_threads, sys_info.num_kernel_threads );
+
+    printw("%10s %6.1f%s %6.1f%s %6.1f%s\n","Cpu(s):",individual_cpu_percentages[0],"%us,",individual_cpu_percentages[1],
+           "%sy,",individual_cpu_percentages[2],"%id");
+    for( size_t i=1; i<sys_info.cpus.size( ); i++ )
+    {
+      if( i%2==1 && i != sys_info.cpus.size( )-1)
+      {
+        printw("%7s %d%c %6.1f%s %6.1f%s %6.1f%s","Cpu",i,':',individual_cpu_percentages[3*i],"%us,",
+                individual_cpu_percentages[3*i+1],"%sy,",individual_cpu_percentages[3*i+2],"%id");
+      }
+      else
+      {
+        printw("%7s %d%c %6.1f%s %6.1f%s %6.1f%s\n","Cpu",i,':',individual_cpu_percentages[3*i],"%us,",
+                individual_cpu_percentages[3*i+1],"%sy,",individual_cpu_percentages[3*i+2],"%id");
+      }
+    }
+    printw("Mem:  %dk total,  %dk used,  %dk free\n\n",meminfo.total_memory,meminfo.total_memory-meminfo.free_memory,
+            meminfo.free_memory);
+
+    attron(A_STANDOUT);
+    printw("%9s %9s %7s %7s %20s %27s\n","PID" ,"RES","STATE","%CPU","TIME+ ","COMMAND");
+    attroff(A_STANDOUT);
+
+    int ip;
+    vector<Proc_and_More> procs(sys_info.processes.size( )); 
+    for( size_t i=0; i<sys_info.processes.size( ); i++ )
+    {
+      ip=index_find( sys_info_prev.processes,sys_info.processes[i].pid );
+      if( ip != -1 )
+      {
+        procs[i].percent_cpu=100.0*(sys_info.processes[i].utime-sys_info_prev.processes[ip].utime+
+                                    sys_info.processes[i].stime-sys_info_prev.processes[ip].stime)/(ttime-ttime_prev);
+        procs[i].proc_time=double(sys_info.processes[i].utime+sys_info.processes[i].stime)/double(sysconf(_SC_CLK_TCK));
+      }
+      else
+      {
+        procs[i].percent_cpu=0.0;
+        procs[i].proc_time=0.0;
+      }
+      procs[i].p=sys_info.processes[i];
+    }
+    if( do_sort != -1 )
+    {
+      if( sort_opt == "PID" )
+      {
+        sort( procs.begin( ), procs.end( ), PIDcomp );
+      }
+      if( sort_opt == "CPU" )
+      {
+        sort( procs.begin( ), procs.end( ), CPUcomp );
+      }
+      if( sort_opt == "MEM" )
+      {
+        sort( procs.begin( ), procs.end( ), MEMcomp );
+      }
+      if( sort_opt == "TIME" )
+      {
+        sort( procs.begin( ), procs.end( ), TIMEcomp );
+      }
+    }
+
+    double secs,hun_secs;
+    stringstream ss1,ss2,ss3,ss4;
+    string sproc_time;
+    int procs_to_show=30;
+    for( int i=0; i<procs_to_show; i++ )
+    {
+      hours=floor(procs[i].proc_time/(3600.0));
+      ss1 << hours;
+      mins=floor((procs[i].proc_time/(3600.0)-hours)*60.0);
+      ss2 << mins;
+      secs=((procs[i].proc_time/(3600.0)-hours)*60.0-mins)*60.0;
+      ss3 << floor(secs);
+      hun_secs=floor(round(100.0*(secs-floor(secs))));
+      ss4 << hun_secs;
+      sproc_time=ss1.str( ) + ":";
+      if( mins < 10 )
+      {
+         sproc_time= sproc_time + "0" + ss2.str( ) + ":";
+      }
+      else
+      {
+         sproc_time= sproc_time + ss2.str( ) + ":";
+      }
+      if( secs < 10 )
+      {
+         sproc_time= sproc_time + "0" + ss3.str( ) + ".";
+      }
+      else
+      {
+         sproc_time= sproc_time + ss3.str( ) + ".";
+      }
+      if( hun_secs < 10 )
+      {
+         sproc_time= sproc_time + "0" + ss4.str( );
+      }
+      else
+      {
+         sproc_time= sproc_time + ss4.str( );
+      }
+      ss1.str( string( ) ); ss2.str( string( ) ); ss3.str( string( ) ); ss4.str( string( ) );
+      string scomm=procs[i].p.comm;
+      scomm.erase( 0,1 );
+      scomm.erase( scomm.size( )-1,1 );
+      printw("%9d %9s %7c %7.1f %20s %27s\n",procs[i].p.pid,get_pages_bytes( procs[i].p.rss ).c_str( ),
+              procs[i].p.state,procs[i].percent_cpu,sproc_time.c_str( ),scomm.c_str( ));
+    }
+
+    // Redraw the screen.
+    refresh();
+    
+    // End the loop and exit if Q is pressed
+    exit_if_user_presses_q();
+  }
+
+  // ncurses teardown
+  endwin();
+
+  return EXIT_SUCCESS;
+}

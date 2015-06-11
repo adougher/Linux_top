@@ -1,0 +1,39 @@
+Name:	ntpd
+State:	S (sleeping)
+Tgid:	1843
+Pid:	1843
+PPid:	1
+TracerPid:	0
+Uid:	117	117	117	117
+Gid:	128	128	128	128
+FDSize:	64
+Groups:	128 
+VmPeak:	   25956 kB
+VmSize:	   25952 kB
+VmLck:	       0 kB
+VmPin:	       0 kB
+VmHWM:	    1848 kB
+VmRSS:	    1848 kB
+VmData:	     684 kB
+VmStk:	     136 kB
+VmExe:	     604 kB
+VmLib:	    4968 kB
+VmPTE:	      64 kB
+VmSwap:	       0 kB
+Threads:	1
+SigQ:	0/63404
+SigPnd:	0000000000000000
+ShdPnd:	0000000000000000
+SigBlk:	0000000000000000
+SigIgn:	0000000000001000
+SigCgt:	0000000180006a47
+CapInh:	0000000000000000
+CapPrm:	0000000002000400
+CapEff:	0000000002000400
+CapBnd:	ffffffffffffffff
+Cpus_allowed:	ffff
+Cpus_allowed_list:	0-15
+Mems_allowed:	00000000,00000001
+Mems_allowed_list:	0
+voluntary_ctxt_switches:	1545698
+nonvoluntary_ctxt_switches:	322

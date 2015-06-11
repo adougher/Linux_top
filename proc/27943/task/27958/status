@@ -1,0 +1,39 @@
+Name:	dconf worker
+State:	S (sleeping)
+Tgid:	27943
+Pid:	27958
+PPid:	1
+TracerPid:	0
+Uid:	104	104	104	104
+Gid:	111	111	111	111
+FDSize:	128
+Groups:	111 
+VmPeak:	  565432 kB
+VmSize:	  557232 kB
+VmLck:	       0 kB
+VmPin:	       0 kB
+VmHWM:	    7244 kB
+VmRSS:	    7244 kB
+VmData:	  377388 kB
+VmStk:	     136 kB
+VmExe:	      44 kB
+VmLib:	   23920 kB
+VmPTE:	     396 kB
+VmSwap:	       0 kB
+Threads:	3
+SigQ:	0/63404
+SigPnd:	0000000000000000
+ShdPnd:	0000000000000000
+SigBlk:	0000000000000000
+SigIgn:	0000000000001000
+SigCgt:	0000000180000000
+CapInh:	0000000000000000
+CapPrm:	0000000000000000
+CapEff:	0000000000000000
+CapBnd:	ffffffffffffffff
+Cpus_allowed:	ffff
+Cpus_allowed_list:	0-15
+Mems_allowed:	00000000,00000001
+Mems_allowed_list:	0
+voluntary_ctxt_switches:	5
+nonvoluntary_ctxt_switches:	0

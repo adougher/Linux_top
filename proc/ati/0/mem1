@@ -1,0 +1,15 @@
+              total counts            |    outstanding
+type           alloc  fail      bytes | allocs      bytes
+mappings          50     0   44769280 |      5    4476928
+textures           0     0          0 |      0          0
+agplist            0     0          0 |      0          0
+agpmem             0     0          0 |      0          0
+boundagp           0     0          0 |      0          0
+aperture           0     0          0 |      0          0
+dmabufs            0     0          0 |      0          0
+memlocks           0     0          0 |      0          0
+mutex            105     0       3360 |      6        192
+drawables         15     0        360 |      0          0
+mempages     3182506     0 13035544576 |  19217   78712832
+pcielist        3900     0   42283616 |     18     230748
+pcie               0     0          0 |      0          0
